@@ -18,7 +18,7 @@ Bot.ai is a sleek and minimal chatbot app built using **Flutter** and powered by
 
 | App UI |
 |--------|
-|<img src="C:\Users\PARVEEN\Downloads\Bot.ai_UI.png" width="300">|
+|<img src="screenshots/Bot.ai_UI.png" width="300">
 
 > *You can replace the image link with your actual file path once you upload the screenshot to GitHub (`/screenshots/chat_ui.jpg`).*
 
@@ -31,5 +31,7 @@ Bot.ai is a sleek and minimal chatbot app built using **Flutter** and powered by
 ```bash
 git clone https://github.com/Salman-747/Bot.ai.git
 cd Bot.ai
+
+
 
 
