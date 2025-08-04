@@ -1,19 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-const String _api = "AIzaSyDJSxx3jU2Do9-GZtALVOI8wSXolwXId7Q";
+Future<void> main() async {
+  await dotenv.load(fileName: ".env");
+  final apiKey = dotenv.env['GEMINI_API_KEY'];
 
-void main() {
-  if (_api.isEmpty) {
-    print('Api key is empty');
+  if (apiKey == null || apiKey.isEmpty) {
+    print('API key is missing! Make sure it is in your .env file');
     return;
   }
-  runApp(const ChatBot());
+
+  runApp(ChatBot(apiKey: apiKey));
 }
 
 class ChatBot extends StatelessWidget {
-  const ChatBot({super.key});
-
+  final String apiKey;
+  const ChatBot({super.key, required this.apiKey});
   @override
   Widget build(BuildContext context) {
     // TODO: implement build
