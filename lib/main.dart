@@ -1,25 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-Future<void> main() async {
-  await dotenv.load(fileName: ".env");
-  final apiKey = dotenv.env['GEMINI_API_KEY'];
+// --- Configuration ---
+// The API key is passed as an environment variable when running the app.
+// flutter run --dart-define=API_KEY=YOUR_API_KEY
+const String _apiKey ='';
 
-  if (apiKey == null || apiKey.isEmpty) {
-    print('API key is missing! Make sure it is in your .env file');
+void main() {
+  if (_apiKey.isEmpty) {
+    // A simple check to ensure the API key is provided.
+    print('No API_KEY environment variable found.');
     return;
   }
-
-  runApp(ChatBot(apiKey: apiKey));
+  runApp(const ChatBot(apiKey: _apiKey,));
 }
 
 class ChatBot extends StatelessWidget {
   final String apiKey;
   const ChatBot({super.key, required this.apiKey});
+
   @override
   Widget build(BuildContext context) {
-    // TODO: implement build
     return MaterialApp(
       title: 'My Bot.ai',
       theme: ThemeData(
@@ -29,20 +30,18 @@ class ChatBot extends StatelessWidget {
         ),
         useMaterial3: true,
       ),
-      home: const ChatScreen(
-          title: 'Bot.ai'),
-
+      home: ChatScreen(title: 'Bot.ai', apiKey: apiKey),
     );
   }
 }
 
 class ChatScreen extends StatefulWidget {
-  const ChatScreen({super.key, required this.title});
-
   final String title;
+  final String apiKey;
+  const ChatScreen({super.key, required this.title, required this.apiKey});
 
   @override
-  State<ChatScreen>createState() => _ChatScreenState();
+  State<ChatScreen> createState() => _ChatScreenState();
 }
 
 class _ChatScreenState extends State<ChatScreen> {
@@ -56,20 +55,24 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   void initState() {
     super.initState();
-    _model = GenerativeModel(model: 'gemini-1.5-flash-latest', apiKey: _api);
+    _model = GenerativeModel(
+      model: 'gemini-1.5-flash-latest',
+      apiKey: widget.apiKey,
+    );
     _chat = _model.startChat();
   }
 
   @override
   Widget build(BuildContext context) {
-    // TODO: implement build
     return Scaffold(
-      appBar: AppBar(title: Text(widget.title),centerTitle: true,),
+      appBar: AppBar(
+        title: Text(widget.title),
+        centerTitle: true,
+      ),
       body: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Column(
           children: [
-            // --- Chat History ---
             Expanded(
               child: ListView.builder(
                 controller: _scrollController,
@@ -85,9 +88,8 @@ class _ChatScreenState extends State<ChatScreen> {
                 padding: EdgeInsets.symmetric(vertical: 16.0),
                 child: CircularProgressIndicator(),
               ),
-
             Padding(
-              padding: EdgeInsetsGeometry.symmetric(vertical: 16.0),
+              padding: const EdgeInsets.symmetric(vertical: 16.0),
               child: Row(
                 children: [
                   Expanded(
@@ -95,7 +97,7 @@ class _ChatScreenState extends State<ChatScreen> {
                       controller: _textController,
                       autofocus: true,
                       decoration: InputDecoration(
-                        hintText: 'What can i do for you?',
+                        hintText: 'What can I do for you?',
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(25.0),
                         ),
@@ -126,60 +128,65 @@ class _ChatScreenState extends State<ChatScreen> {
     final userInput = text;
     _textController.clear();
     setState(() {
-      _isLoading=true;
-      _messages.add(Message(text: userInput,isUser:true));
+      _isLoading = true;
+      _messages.add(Message(text: userInput, isUser: true));
     });
     _scrollToBottom();
     try {
-      final response= await _chat.sendMessage(Content.text(userInput));
-      final botResponse= response.text;
-      if (botResponse!=null){
+      final response = await _chat.sendMessage(Content.text(userInput));
+      final botResponse = response.text;
+      if (botResponse != null) {
         setState(() {
-          _messages.add(Message(text:botResponse, isUser: false));
+          _messages.add(Message(text: botResponse, isUser: false));
         });
       }
-    } catch(e){
-      print('Error Message:$e');
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error :${e.toString()}')));
-    } finally{
+    } catch (e) {
+      print('Error Message: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: ${e.toString()}')),
+      );
+    } finally {
       setState(() {
-        _isLoading=false;
-
+        _isLoading = false;
       });
       _scrollToBottom();
     }
   }
-  void _scrollToBottom(){
-    WidgetsBinding.instance.addPostFrameCallback((_){
-      if (_scrollController.hasClients){
+
+  void _scrollToBottom() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
         _scrollController.animateTo(
           _scrollController.position.maxScrollExtent,
-          duration:const Duration(milliseconds: 250),
+          duration: const Duration(milliseconds: 250),
           curve: Curves.easeOut,
         );
       }
     });
   }
 }
-class Message{
+
+class Message {
   final String text;
   final bool isUser;
   Message({required this.text, required this.isUser});
 }
-class ChatMessageWidget extends StatelessWidget{
+
+class ChatMessageWidget extends StatelessWidget {
   final Message message;
   const ChatMessageWidget({super.key, required this.message});
+
   @override
   Widget build(BuildContext context) {
-    // TODO: implement build
     return Align(
-      alignment: message.isUser? Alignment.centerRight: Alignment.centerLeft,
+      alignment:
+      message.isUser ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 4.0,horizontal: 80),
+        margin: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 80),
         padding: const EdgeInsets.all(12.0),
         decoration: BoxDecoration(
           color: message.isUser
-              ?Theme.of(context).colorScheme.primary
+              ? Theme.of(context).colorScheme.primary
               : Theme.of(context).colorScheme.secondary,
           borderRadius: BorderRadius.circular(16.0),
         ),
@@ -187,10 +194,9 @@ class ChatMessageWidget extends StatelessWidget{
           message.text,
           style: TextStyle(
             color: message.isUser
-              ? Theme.of(context).colorScheme.onPrimary
+                ? Theme.of(context).colorScheme.onPrimary
                 : Theme.of(context).colorScheme.onSecondary,
-
-          )
+          ),
         ),
       ),
     );
